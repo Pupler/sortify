@@ -22,10 +22,32 @@ public class FileSorterService
             var fileModel = new Models.File
             {
                 Name = fileName,
-                DashIndex = dashIndex
+                DashIndex = dashIndex,
+                Extension = Path.GetExtension(file)
             };
 
             files_list.Add(fileModel);
+        }
+
+        var groups = files_list.GroupBy(f => f.Name?[..f.DashIndex]);
+
+        foreach (var group in groups)
+        {
+            Console.WriteLine(group.Key);
+
+            if (path[^1] != '/')
+            {
+                path += '/';
+            }
+
+            Directory.CreateDirectory($"{path + group.Key}");
+
+            foreach (var file in group)
+            {
+                Console.WriteLine($"{file.Name}: {file.DashIndex}");
+
+                File.Move(path + file.Name + file.Extension, path + group.Key + '/' + file.Name + file.Extension);
+            }
         }
     }
 }
