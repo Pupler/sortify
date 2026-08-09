@@ -7,6 +7,11 @@ public class FileSorterService
         var files = Directory.GetFiles(path);
         List<Models.File> files_list = [];
 
+        if (path[^1] != '/')
+        {
+            path += '/';
+        }
+
         foreach (var file in files)
         {
             string fileName = Path.GetFileNameWithoutExtension(file);
@@ -33,20 +38,26 @@ public class FileSorterService
 
         foreach (var group in groups)
         {
-            Console.WriteLine(group.Key);
-
-            if (path[^1] != '/')
+            if (group.Key != null)
             {
-                path += '/';
-            }
+                Console.WriteLine(group.Key);
 
-            Directory.CreateDirectory($"{path + group.Key}");
+                Directory.CreateDirectory($"{path + group.Key}");
 
-            foreach (var file in group)
-            {
-                Console.WriteLine($"{file.Name}: {file.DashIndex}");
+                foreach (var file in group)
+                {
+                    var prefix = file.Name + file.Extension;
+                    var destinationFolderPath = Path.Combine(path, group.Key, prefix);
 
-                File.Move(path + file.Name + file.Extension, path + group.Key + '/' + file.Name + file.Extension);
+                    Console.WriteLine($"{file.Name}: {file.DashIndex}");
+
+                    if (File.Exists(destinationFolderPath))
+                    {
+                        continue;
+                    }
+
+                    File.Move(path + prefix, destinationFolderPath);
+                }
             }
         }
     }
