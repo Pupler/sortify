@@ -2,7 +2,7 @@ namespace Sortify.Services;
 
 public class FileSorterService
 {
-    public static void SortFiles(string path)
+    public static void SortFiles(string path, bool sortByType)
     {
         var files = Directory.GetFiles(path);
         List<Models.File> files_list = [];
@@ -47,16 +47,38 @@ public class FileSorterService
                 foreach (var file in group)
                 {
                     var prefix = file.Name + file.Extension;
-                    var destinationFolderPath = Path.Combine(path, group.Key, prefix);
+                    var destinationFilePath = Path.Combine(path, group.Key, prefix);
+                    var destinationFolderPath = Path.Combine(path, group.Key);
 
                     Console.WriteLine($"{file.Name}: {file.DashIndex}");
 
-                    if (File.Exists(destinationFolderPath))
+                    if (File.Exists(destinationFilePath))
                     {
                         continue;
                     }
 
-                    File.Move(path + prefix, destinationFolderPath);
+                    File.Move(path + prefix, destinationFilePath);
+                }
+
+                if (sortByType)
+                {
+                    var groupsByFileExt = group.GroupBy(f => f.Extension);
+
+                    foreach (var groupExt in groupsByFileExt)
+                    {
+                        foreach (var fileWithExt in groupExt)
+                        {
+                            var prefix = fileWithExt.Name + fileWithExt.Extension;
+                            var destinationFolderPath = Path.Combine(path, group.Key, groupExt.Key[1..]);
+
+                            if (!Directory.Exists(destinationFolderPath))
+                            {
+                                Directory.CreateDirectory(destinationFolderPath);
+                            }
+
+                            File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destinationFolderPath, prefix));
+                        }
+                    }
                 }
             }
         }

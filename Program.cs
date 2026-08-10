@@ -24,6 +24,6 @@ class Program()
         Console.WriteLine($"Folder path: {folderPath}");
         Console.WriteLine($"Sort by type: {sortByType}");
 
-        FileSorterService.SortFiles(folderPath);
+        FileSorterService.SortFiles(folderPath, sortByType);
     }
 }
