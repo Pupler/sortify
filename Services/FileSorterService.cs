@@ -1,8 +1,10 @@
+using Sortify.Enums;
+
 namespace Sortify.Services;
 
 public class FileSorterService
 {
-    public static void SortFiles(string path, bool sortByType)
+    public static void SortFiles(string path, SortMethod sortMethod)
     {
         var files = Directory.GetFiles(path);
         List<Models.File> files_list = [];
@@ -60,25 +62,32 @@ public class FileSorterService
                     File.Move(path + prefix, destinationFilePath);
                 }
 
-                if (sortByType)
+                switch (sortMethod)
                 {
-                    var groupsByFileExt = group.GroupBy(f => f.Extension);
+                    case SortMethod.SortByType:
+                        var groupsByFileExt = group.GroupBy(f => f.Extension);
 
-                    foreach (var groupExt in groupsByFileExt)
-                    {
-                        foreach (var fileWithExt in groupExt)
+                        foreach (var groupExt in groupsByFileExt)
                         {
-                            var prefix = fileWithExt.Name + fileWithExt.Extension;
-                            var destinationFolderPath = Path.Combine(path, group.Key, groupExt.Key[1..]);
-
-                            if (!Directory.Exists(destinationFolderPath))
+                            foreach (var fileWithExt in groupExt)
                             {
-                                Directory.CreateDirectory(destinationFolderPath);
-                            }
+                                var prefix = fileWithExt.Name + fileWithExt.Extension;
+                                var destinationFolderPath = Path.Combine(path, group.Key, groupExt.Key[1..]);
 
-                            File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destinationFolderPath, prefix));
+                                if (!Directory.Exists(destinationFolderPath))
+                                {
+                                    Directory.CreateDirectory(destinationFolderPath);
+                                }
+
+                                File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destinationFolderPath, prefix));
+                            }
                         }
-                    }
+                        break;
+                    case SortMethod.SortByCategory:
+                        // to be implemented
+                        break;
+                    default:
+                        break;
                 }
             }
         }
