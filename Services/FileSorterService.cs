@@ -100,29 +100,15 @@ public class FileSorterService
                             foreach (var fileWithExt in groupByFileExt)
                             {
                                 var prefix = fileWithExt.Name + fileWithExt.Extension;
-                                
-                                if (extensionToCategory.TryGetValue(fileWithExt.Extension, out var category))
+                                var category = extensionToCategory.TryGetValue(fileWithExt.Extension, out var mappedCategory) ? mappedCategory : "other";
+                                var destFolderPath = Path.Combine(path, group.Key, category);
+
+                                if (!Directory.Exists(destFolderPath))
                                 {
-                                    var destFolderPath = Path.Combine(path, group.Key, category);
-
-                                    if (!Directory.Exists(destFolderPath))
-                                    {
-                                        Directory.CreateDirectory(destFolderPath);
-                                    }
-
-                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPath, prefix));
+                                    Directory.CreateDirectory(destFolderPath);
                                 }
-                                else
-                                {
-                                    var destFolderPath = Path.Combine(path, group.Key, "other");
 
-                                    if (!Directory.Exists(destFolderPath))
-                                    {
-                                        Directory.CreateDirectory(destFolderPath);
-                                    }
-
-                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPath, prefix));
-                                }
+                                File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPath, prefix));
                             }
                         }
                         break;
