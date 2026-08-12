@@ -84,7 +84,46 @@ public class FileSorterService
                         }
                         break;
                     case SortMethod.SortByCategory:
-                        // to be implemented
+                        var groupsByFileExtension = group.GroupBy(f => f.Extension);
+
+                        foreach (var groupByFileExt in groupsByFileExtension)
+                        {
+                            foreach (var fileWithExt in groupByFileExt)
+                            {
+                                var prefix = fileWithExt.Name + fileWithExt.Extension;
+                                var destFolderPathPhotos = Path.Combine(path, group.Key, "photos");
+                                var destFolderPathVideos = Path.Combine(path, group.Key, "videos");
+                                var destFolderPathArchives = Path.Combine(path, group.Key, "archives");
+
+                                if (fileWithExt.Extension == ".png" || fileWithExt.Extension == ".jpg")
+                                {
+                                    if (!Directory.Exists(destFolderPathPhotos))
+                                    {
+                                        Directory.CreateDirectory(destFolderPathPhotos);
+                                    }
+
+                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPathPhotos, prefix));
+                                }
+                                else if (fileWithExt.Extension == ".mov" || fileWithExt.Extension == ".mp4")
+                                {
+                                    if (!Directory.Exists(destFolderPathVideos))
+                                    {
+                                        Directory.CreateDirectory(destFolderPathVideos);
+                                    }
+
+                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPathVideos, prefix));
+                                }
+                                else if (fileWithExt.Extension == ".zip" || fileWithExt.Extension == ".rar")
+                                {
+                                    if (!Directory.Exists(destFolderPathArchives))
+                                    {
+                                        Directory.CreateDirectory(destFolderPathArchives);
+                                    }
+
+                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPathArchives, prefix));
+                                }
+                            }
+                        }
                         break;
                     default:
                         break;
