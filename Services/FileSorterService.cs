@@ -8,6 +8,15 @@ public class FileSorterService
     {
         var files = Directory.GetFiles(path);
         List<Models.File> files_list = [];
+        Dictionary<string, string> extensionToCategory = new () {
+            [".jpg"] = "photos",
+            [".png"] = "photos",
+            [".gif"] = "GIFs",
+            [".mov"] = "videos",
+            [".mp4"] = "videos",
+            [".rar"] = "archives",
+            [".7z"] = "archives"
+        };
 
         if (path[^1] != '/')
         {
@@ -91,36 +100,28 @@ public class FileSorterService
                             foreach (var fileWithExt in groupByFileExt)
                             {
                                 var prefix = fileWithExt.Name + fileWithExt.Extension;
-                                var destFolderPathPhotos = Path.Combine(path, group.Key, "photos");
-                                var destFolderPathVideos = Path.Combine(path, group.Key, "videos");
-                                var destFolderPathArchives = Path.Combine(path, group.Key, "archives");
-
-                                if (fileWithExt.Extension == ".png" || fileWithExt.Extension == ".jpg")
+                                
+                                if (extensionToCategory.TryGetValue(fileWithExt.Extension, out var category))
                                 {
-                                    if (!Directory.Exists(destFolderPathPhotos))
+                                    var destFolderPath = Path.Combine(path, group.Key, category);
+
+                                    if (!Directory.Exists(destFolderPath))
                                     {
-                                        Directory.CreateDirectory(destFolderPathPhotos);
+                                        Directory.CreateDirectory(destFolderPath);
                                     }
 
-                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPathPhotos, prefix));
+                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPath, prefix));
                                 }
-                                else if (fileWithExt.Extension == ".mov" || fileWithExt.Extension == ".mp4")
+                                else
                                 {
-                                    if (!Directory.Exists(destFolderPathVideos))
+                                    var destFolderPath = Path.Combine(path, group.Key, "other");
+
+                                    if (!Directory.Exists(destFolderPath))
                                     {
-                                        Directory.CreateDirectory(destFolderPathVideos);
+                                        Directory.CreateDirectory(destFolderPath);
                                     }
 
-                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPathVideos, prefix));
-                                }
-                                else if (fileWithExt.Extension == ".zip" || fileWithExt.Extension == ".rar")
-                                {
-                                    if (!Directory.Exists(destFolderPathArchives))
-                                    {
-                                        Directory.CreateDirectory(destFolderPathArchives);
-                                    }
-
-                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPathArchives, prefix));
+                                    File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPath, prefix));
                                 }
                             }
                         }
