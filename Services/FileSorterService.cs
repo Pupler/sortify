@@ -4,6 +4,27 @@ namespace Sortify.Services;
 
 public class FileSorterService
 {
+    private static void MoveFilesIntoSubfolder(IGrouping<string, Models.File> group, string path, Func<Models.File, string> folderNameSelector)
+    {
+        var groupsByFileExt = group.GroupBy(f => f.Extension);
+        
+        foreach (var groupByFileExt in groupsByFileExt)
+        {
+            foreach (var fileWithExt in groupByFileExt)
+            {
+                var prefix = fileWithExt.Name + fileWithExt.Extension;
+                var destinationFolderPath = Path.Combine(path, group.Key, folderNameSelector(fileWithExt));
+
+                if (!Directory.Exists(destinationFolderPath))
+                {
+                    Directory.CreateDirectory(destinationFolderPath);
+                }
+
+                File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destinationFolderPath, prefix));
+            }
+        }
+    }
+    
     public static void SortFiles(string path, SortMethod sortMethod)
     {
         var files = Directory.GetFiles(path);
@@ -74,43 +95,10 @@ public class FileSorterService
                 switch (sortMethod)
                 {
                     case SortMethod.SortByType:
-                        var groupsByFileExt = group.GroupBy(f => f.Extension);
-
-                        foreach (var groupExt in groupsByFileExt)
-                        {
-                            foreach (var fileWithExt in groupExt)
-                            {
-                                var prefix = fileWithExt.Name + fileWithExt.Extension;
-                                var destinationFolderPath = Path.Combine(path, group.Key, groupExt.Key[1..]);
-
-                                if (!Directory.Exists(destinationFolderPath))
-                                {
-                                    Directory.CreateDirectory(destinationFolderPath);
-                                }
-
-                                File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destinationFolderPath, prefix));
-                            }
-                        }
+                        MoveFilesIntoSubfolder(group, path, f => f.Extension[1..]);
                         break;
                     case SortMethod.SortByCategory:
-                        var groupsByFileExtension = group.GroupBy(f => f.Extension);
-
-                        foreach (var groupByFileExt in groupsByFileExtension)
-                        {
-                            foreach (var fileWithExt in groupByFileExt)
-                            {
-                                var prefix = fileWithExt.Name + fileWithExt.Extension;
-                                var category = extensionToCategory.TryGetValue(fileWithExt.Extension, out var mappedCategory) ? mappedCategory : "other";
-                                var destFolderPath = Path.Combine(path, group.Key, category);
-
-                                if (!Directory.Exists(destFolderPath))
-                                {
-                                    Directory.CreateDirectory(destFolderPath);
-                                }
-
-                                File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destFolderPath, prefix));
-                            }
-                        }
+                        MoveFilesIntoSubfolder(group, path, f => extensionToCategory.TryGetValue(f.Extension, out var mappedCategory) ? mappedCategory : "other");
                         break;
                     default:
                         break;
