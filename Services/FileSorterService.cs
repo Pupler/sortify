@@ -4,7 +4,7 @@ namespace Sortify.Services;
 
 public class FileSorterService
 {
-    private static void MoveFilesIntoSubfolder(IGrouping<string, Models.File> group, string path, Func<Models.File, string> folderNameSelector)
+    private static void MoveFilesIntoSubfolder(IGrouping<string?, Models.File> group, string path, Func<Models.File, string> folderNameSelector)
     {
         var groupsByFileExt = group.GroupBy(f => f.Extension);
         
@@ -70,39 +70,36 @@ public class FileSorterService
 
         foreach (var group in groups)
         {
-            if (group.Key != null)
+            Console.WriteLine($"Group: {group.Key} ({group.Count()} files)");
+
+            Directory.CreateDirectory($"{path + group.Key}");
+
+            foreach (var file in group)
             {
-                Console.WriteLine(group.Key);
+                var prefix = file.Name + file.Extension;
+                var destinationFilePath = Path.Combine(path, group.Key, prefix);
+                var destinationFolderPath = Path.Combine(path, group.Key);
 
-                Directory.CreateDirectory($"{path + group.Key}");
+                Console.WriteLine($"{prefix}");
 
-                foreach (var file in group)
+                if (File.Exists(destinationFilePath))
                 {
-                    var prefix = file.Name + file.Extension;
-                    var destinationFilePath = Path.Combine(path, group.Key, prefix);
-                    var destinationFolderPath = Path.Combine(path, group.Key);
-
-                    Console.WriteLine($"{file.Name}: {file.DashIndex}");
-
-                    if (File.Exists(destinationFilePath))
-                    {
-                        continue;
-                    }
-
-                    File.Move(path + prefix, destinationFilePath);
+                    continue;
                 }
 
-                switch (sortMethod)
-                {
-                    case SortMethod.SortByType:
-                        MoveFilesIntoSubfolder(group, path, f => f.Extension[1..]);
-                        break;
-                    case SortMethod.SortByCategory:
-                        MoveFilesIntoSubfolder(group, path, f => extensionToCategory.TryGetValue(f.Extension, out var mappedCategory) ? mappedCategory : "other");
-                        break;
-                    default:
-                        break;
-                }
+                File.Move(path + prefix, destinationFilePath);
+            }
+
+            switch (sortMethod)
+            {
+                case SortMethod.SortByType:
+                    MoveFilesIntoSubfolder(group, path, f => f.Extension[1..]);
+                    break;
+                case SortMethod.SortByCategory:
+                    MoveFilesIntoSubfolder(group, path, f => extensionToCategory.TryGetValue(f.Extension, out var mappedCategory) ? mappedCategory : "other");
+                    break;
+                default:
+                    break;
             }
         }
     }
