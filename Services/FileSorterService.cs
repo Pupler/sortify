@@ -13,14 +13,14 @@ public class FileSorterService
             foreach (var fileWithExt in groupByFileExt)
             {
                 var prefix = fileWithExt.Name + fileWithExt.Extension;
-                var destinationFolderPath = Path.Combine(path, group.Key, folderNameSelector(fileWithExt));
+                var destinationFolderPath = Path.Combine(path, group.Key!, folderNameSelector(fileWithExt));
 
                 if (!Directory.Exists(destinationFolderPath))
                 {
                     Directory.CreateDirectory(destinationFolderPath);
                 }
 
-                File.Move(Path.Combine(path, group.Key, prefix), Path.Combine(destinationFolderPath, prefix));
+                File.Move(Path.Combine(path, group.Key!, prefix), Path.Combine(destinationFolderPath, prefix));
             }
         }
     }
@@ -77,8 +77,8 @@ public class FileSorterService
             foreach (var file in group)
             {
                 var prefix = file.Name + file.Extension;
-                var destinationFilePath = Path.Combine(path, group.Key, prefix);
-                var destinationFolderPath = Path.Combine(path, group.Key);
+                var destinationFilePath = Path.Combine(path, group.Key!, prefix);
+                var destinationFolderPath = Path.Combine(path, group.Key!);
 
                 Console.WriteLine($"{prefix}");
 
@@ -93,10 +93,10 @@ public class FileSorterService
             switch (sortMethod)
             {
                 case SortMethod.SortByType:
-                    MoveFilesIntoSubfolder(group, path, f => f.Extension[1..]);
+                    MoveFilesIntoSubfolder(group, path, f => f.Extension![1..]);
                     break;
                 case SortMethod.SortByCategory:
-                    MoveFilesIntoSubfolder(group, path, f => extensionToCategory.TryGetValue(f.Extension, out var mappedCategory) ? mappedCategory : "other");
+                    MoveFilesIntoSubfolder(group, path, f => extensionToCategory.TryGetValue(f.Extension!, out var mappedCategory) ? mappedCategory : "other");
                     break;
                 default:
                     break;
