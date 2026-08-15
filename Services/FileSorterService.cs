@@ -35,14 +35,10 @@ public class FileSorterService
             [".gif"] = "GIFs",
             [".mov"] = "videos",
             [".mp4"] = "videos",
+            [".zip"] = "archives",
             [".rar"] = "archives",
             [".7z"] = "archives"
         };
-
-        if (path[^1] != '/')
-        {
-            path += '/';
-        }
 
         foreach (var file in files)
         {
@@ -72,13 +68,12 @@ public class FileSorterService
         {
             Console.WriteLine($"Group: {group.Key} ({group.Count()} files)");
 
-            Directory.CreateDirectory($"{path + group.Key}");
+            Directory.CreateDirectory(Path.Combine(path, group.Key!));
 
             foreach (var file in group)
             {
                 var prefix = file.Name + file.Extension;
                 var destinationFilePath = Path.Combine(path, group.Key!, prefix);
-                var destinationFolderPath = Path.Combine(path, group.Key!);
 
                 Console.WriteLine($"{prefix}");
 
@@ -87,7 +82,7 @@ public class FileSorterService
                     continue;
                 }
 
-                File.Move(path + prefix, destinationFilePath);
+                File.Move(Path.Combine(path, prefix), destinationFilePath);
             }
 
             switch (sortMethod)
