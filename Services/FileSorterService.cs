@@ -28,7 +28,7 @@ public class FileSorterService
     public static void SortFiles(string path, SortMethod sortMethod)
     {
         var files = Directory.GetFiles(path);
-        List<Models.File> files_list = [];
+        List<Models.File> filesList = [];
         Dictionary<string, string> extensionToCategory = new () {
             [".jpg"] = "photos",
             [".png"] = "photos",
@@ -59,10 +59,10 @@ public class FileSorterService
                 Extension = Path.GetExtension(file)
             };
 
-            files_list.Add(fileModel);
+            filesList.Add(fileModel);
         }
 
-        var groups = files_list.GroupBy(f => f.Name?[..f.DashIndex]);
+        var groups = filesList.GroupBy(f => f.Name?[..f.DashIndex]);
 
         foreach (var group in groups)
         {
@@ -88,10 +88,10 @@ public class FileSorterService
             switch (sortMethod)
             {
                 case SortMethod.SortByType:
-                    MoveFilesIntoSubfolder(group, path, f => f.Extension![1..]);
+                    MoveFilesIntoSubfolder(group, path, f => f.Extension!.ToLower()[1..]);
                     break;
                 case SortMethod.SortByCategory:
-                    MoveFilesIntoSubfolder(group, path, f => extensionToCategory.TryGetValue(f.Extension!, out var mappedCategory) ? mappedCategory : "other");
+                    MoveFilesIntoSubfolder(group, path, f => extensionToCategory.TryGetValue(f.Extension!.ToLower(), out var mappedCategory) ? mappedCategory : "other");
                     break;
                 default:
                     break;
